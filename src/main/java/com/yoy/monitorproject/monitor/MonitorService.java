@@ -27,11 +27,8 @@ class MonitorService {
         }
 
         Monitor monitor = new Monitor(request.name(), request.url(), Instant.now(clock));
-
-        monitor.setMethod(request.method());
-        monitor.setIntervalSeconds(request.intervalSeconds());
-        monitor.setTimeoutMs(request.timeoutMs());
-        monitor.setExpectedStatus(request.expectedStatus());
+        monitor.applySettings(request.method(), request.intervalSeconds(), request.timeoutMs(),
+                request.expectedStatus());
         return monitorRepository.save(monitor);
     }
 
@@ -56,12 +53,8 @@ class MonitorService {
 
         monitor.setName(request.name());
         monitor.setUrl(request.url());
-        monitor.setMethod(request.method());
-        monitor.setIntervalSeconds(request.intervalSeconds());
-        monitor.setTimeoutMs(request.timeoutMs());
-        monitor.setExpectedStatus(request.expectedStatus());
-
-
+        monitor.applySettings(request.method(), request.intervalSeconds(), request.timeoutMs(),
+                request.expectedStatus());
         monitor.setUpdatedAt(Instant.now(clock));
 
         return monitor;

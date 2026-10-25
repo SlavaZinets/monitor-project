@@ -141,6 +141,13 @@ public class Monitor {
         this.expectedStatus = Objects.requireNonNullElse(expectedStatus, DEFAULT_EXPECTED_STATUS);
     }
 
+    void applySettings(CheckMethod method, Integer intervalSeconds, Integer timeoutMs, Integer expectedStatus) {
+        setMethod(method);
+        setIntervalSeconds(intervalSeconds);
+        setTimeoutMs(timeoutMs);
+        setExpectedStatus(expectedStatus);
+    }
+
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }

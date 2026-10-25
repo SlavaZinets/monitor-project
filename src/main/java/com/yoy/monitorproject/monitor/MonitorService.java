@@ -75,20 +75,24 @@ class MonitorService {
     Monitor pause(Long id) {
         Monitor monitor = getById(id);
 
-        monitor.setEnabled(false);
-        monitor.setStatus(MonitorStatus.PAUSED);
+        if (monitor.isEnabled()) {
+            monitor.setEnabled(false);
+            monitor.setStatus(MonitorStatus.PAUSED);
 
-        monitor.setUpdatedAt(Instant.now(clock));
+            monitor.setUpdatedAt(Instant.now(clock));
+        }
         return monitor;
     }
 
     Monitor resume(Long id) {
         Monitor monitor = getById(id);
 
-        monitor.setEnabled(true);
-        monitor.setStatus(MonitorStatus.UNKNOWN);
+        if (!monitor.isEnabled()) {
+            monitor.setEnabled(true);
+            monitor.setStatus(MonitorStatus.UNKNOWN);
 
-        monitor.setUpdatedAt(Instant.now(clock));
+            monitor.setUpdatedAt(Instant.now(clock));
+        }
         return monitor;
     }
 }

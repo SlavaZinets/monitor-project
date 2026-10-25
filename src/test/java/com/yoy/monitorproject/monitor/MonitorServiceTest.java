@@ -132,9 +132,12 @@ class MonitorServiceTest {
 
     @Test
     void shouldResetOptionalFieldsToDefaultsOnUpdate() {
-        when(repository.findById(1L)).thenReturn(Optional.of(monitor(1L, "Example")));
-        service.update(1L,
-                new MonitorUpdateRequest("Example", "https://example.com", CheckMethod.HEAD, 120, 2000, 204));
+        Monitor customised = monitor(1L, "Example");
+        customised.setMethod(CheckMethod.HEAD);
+        customised.setIntervalSeconds(120);
+        customised.setTimeoutMs(2000);
+        customised.setExpectedStatus(204);
+        when(repository.findById(1L)).thenReturn(Optional.of(customised));
 
         Monitor updated = service.update(1L, updateRequest("Example", "https://example.com"));
 
@@ -205,8 +208,10 @@ class MonitorServiceTest {
 
     @Test
     void shouldResumePausedMonitor() {
-        when(repository.findById(1L)).thenReturn(Optional.of(monitor(1L, "Example")));
-        service.pause(1L);
+        Monitor paused = monitor(1L, "Example");
+        paused.setEnabled(false);
+        paused.setStatus(MonitorStatus.PAUSED);
+        when(repository.findById(1L)).thenReturn(Optional.of(paused));
 
         Monitor resumed = service.resume(1L);
 
@@ -221,6 +226,41 @@ class MonitorServiceTest {
 
         assertThatThrownBy(() -> service.pause(42L))
                 .isInstanceOf(MonitorNotFoundException.class);
+    }
+
+    @Test
+    void shouldThrowWhenResumingUnknownMonitor() {
+        when(repository.findById(42L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.resume(42L))
+                .isInstanceOf(MonitorNotFoundException.class);
+    }
+
+    @Test
+    void shouldNotChangeStatusWhenResumingActiveMonitor() {
+        Monitor active = monitor(1L, "Example");
+        active.setStatus(MonitorStatus.UP);
+        when(repository.findById(1L)).thenReturn(Optional.of(active));
+
+        Monitor resumed = service.resume(1L);
+
+        assertThat(resumed.isEnabled()).isTrue();
+        assertThat(resumed.getStatus()).isEqualTo(MonitorStatus.UP);
+        assertThat(resumed.getUpdatedAt()).isEqualTo(CREATED_AT);
+    }
+
+    @Test
+    void shouldLeavePausedMonitorUnchangedWhenPausedAgain() {
+        Monitor alreadyPaused = monitor(1L, "Example");
+        alreadyPaused.setEnabled(false);
+        alreadyPaused.setStatus(MonitorStatus.PAUSED);
+        when(repository.findById(1L)).thenReturn(Optional.of(alreadyPaused));
+
+        Monitor paused = service.pause(1L);
+
+        assertThat(paused.isEnabled()).isFalse();
+        assertThat(paused.getStatus()).isEqualTo(MonitorStatus.PAUSED);
+        assertThat(paused.getUpdatedAt()).isEqualTo(CREATED_AT);
     }
 
     private static MonitorCreateRequest createRequest(String name) {

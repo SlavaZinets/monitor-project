@@ -14,6 +14,12 @@ import java.util.Objects;
 @Entity
 public class Monitor {
 
+    // Keep in sync with the column DEFAULTs in V1__create_monitor.sql
+    private static final CheckMethod DEFAULT_METHOD = CheckMethod.GET;
+    private static final int DEFAULT_INTERVAL_SECONDS = 60;
+    private static final int DEFAULT_TIMEOUT_MS = 5000;
+    private static final int DEFAULT_EXPECTED_STATUS = 200;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -26,16 +32,16 @@ public class Monitor {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 10)
-    private CheckMethod method = CheckMethod.GET;
+    private CheckMethod method = DEFAULT_METHOD;
 
     @Column(nullable = false)
-    private int intervalSeconds = 60;
+    private int intervalSeconds = DEFAULT_INTERVAL_SECONDS;
 
     @Column(nullable = false)
-    private int timeoutMs = 5000;
+    private int timeoutMs = DEFAULT_TIMEOUT_MS;
 
     @Column(nullable = false)
-    private int expectedStatus = 200;
+    private int expectedStatus = DEFAULT_EXPECTED_STATUS;
 
     @Column(nullable = false)
     private boolean enabled = true;
@@ -120,21 +126,19 @@ public class Monitor {
     }
 
     public void setMethod(CheckMethod method) {
-
-            this.method = Objects.requireNonNullElse(method, CheckMethod.GET);
-
+        this.method = Objects.requireNonNullElse(method, DEFAULT_METHOD);
     }
 
     public void setIntervalSeconds(Integer intervalSeconds) {
-        this.intervalSeconds = Objects.requireNonNullElse(intervalSeconds, 60);
+        this.intervalSeconds = Objects.requireNonNullElse(intervalSeconds, DEFAULT_INTERVAL_SECONDS);
     }
 
     public void setTimeoutMs(Integer timeoutMs) {
-            this.timeoutMs = Objects.requireNonNullElse(timeoutMs, 5000);
+        this.timeoutMs = Objects.requireNonNullElse(timeoutMs, DEFAULT_TIMEOUT_MS);
     }
 
     public void setExpectedStatus(Integer expectedStatus) {
-        this.expectedStatus = Objects.requireNonNullElse(expectedStatus, 200);
+        this.expectedStatus = Objects.requireNonNullElse(expectedStatus, DEFAULT_EXPECTED_STATUS);
     }
 
     public void setEnabled(boolean enabled) {

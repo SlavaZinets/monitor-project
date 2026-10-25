@@ -139,12 +139,14 @@ class MonitorServiceTest {
         customised.setExpectedStatus(204);
         when(repository.findById(1L)).thenReturn(Optional.of(customised));
 
+        Monitor defaults = new Monitor("Example", "https://example.com", CREATED_AT);
+
         Monitor updated = service.update(1L, updateRequest("Example", "https://example.com"));
 
-        assertThat(updated.getMethod()).isEqualTo(CheckMethod.GET);
-        assertThat(updated.getIntervalSeconds()).isEqualTo(60);
-        assertThat(updated.getTimeoutMs()).isEqualTo(5000);
-        assertThat(updated.getExpectedStatus()).isEqualTo(200);
+        assertThat(updated.getMethod()).isEqualTo(defaults.getMethod());
+        assertThat(updated.getIntervalSeconds()).isEqualTo(defaults.getIntervalSeconds());
+        assertThat(updated.getTimeoutMs()).isEqualTo(defaults.getTimeoutMs());
+        assertThat(updated.getExpectedStatus()).isEqualTo(defaults.getExpectedStatus());
     }
 
     @Test

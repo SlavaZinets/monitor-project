@@ -265,6 +265,42 @@ class MonitorServiceTest {
         assertThat(paused.getUpdatedAt()).isEqualTo(CREATED_AT);
     }
 
+    @Test
+    void shouldTrimNameOnCreate() {
+        when(repository.save(any(Monitor.class))).thenAnswer(returnsFirstArg());
+
+        Monitor created = service.create(createRequest("  Example  "));
+
+        assertThat(created.getName()).isEqualTo("Example");
+    }
+
+    @Test
+    void shouldThrowWhenTrimmedNameAlreadyExists() {
+        when(repository.findByName("Example")).thenReturn(Optional.of(monitor(1L, "Example")));
+
+        assertThatThrownBy(() -> service.create(createRequest("  Example  ")))
+                .isInstanceOf(MonitorNameAlreadyExistsException.class);
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void shouldTrimNameOnUpdate() {
+        when(repository.findById(1L)).thenReturn(Optional.of(monitor(1L, "Example")));
+
+        Monitor updated = service.update(1L, updateRequest("  Renamed  ", "https://example.com"));
+
+        assertThat(updated.getName()).isEqualTo("Renamed");
+    }
+
+    @Test
+    void shouldThrowWhenUpdatingToTrimmedNameOfAnotherMonitor() {
+        when(repository.findById(1L)).thenReturn(Optional.of(monitor(1L, "Example")));
+        when(repository.findByName("Taken")).thenReturn(Optional.of(monitor(2L, "Taken")));
+
+        assertThatThrownBy(() -> service.update(1L, updateRequest("  Taken  ", "https://example.com")))
+                .isInstanceOf(MonitorNameAlreadyExistsException.class);
+    }
+
     private static MonitorCreateRequest createRequest(String name) {
         return new MonitorCreateRequest(name, "https://example.com", null, null, null, null);
     }

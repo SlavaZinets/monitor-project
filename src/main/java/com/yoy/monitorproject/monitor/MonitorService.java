@@ -21,12 +21,13 @@ class MonitorService {
     }
 
     Monitor create(MonitorCreateRequest request) {
+        String trimmedName = request.name().strip();
 
-        if (monitorRepository.findByName(request.name()).isPresent()) {
-            throw new MonitorNameAlreadyExistsException(request.name());
+        if (monitorRepository.findByName(trimmedName).isPresent()) {
+            throw new MonitorNameAlreadyExistsException(trimmedName);
         }
 
-        Monitor monitor = new Monitor(request.name(), request.url(), Instant.now(clock));
+        Monitor monitor = new Monitor(trimmedName, request.url(), Instant.now(clock));
         monitor.applySettings(request.method(), request.intervalSeconds(), request.timeoutMs(),
                 request.expectedStatus());
         return monitorRepository.save(monitor);
@@ -44,14 +45,15 @@ class MonitorService {
 
     Monitor update(Long id, MonitorUpdateRequest request) {
         Monitor monitor = getById(id);
+        String trimmedName = request.name().strip();
 
-        Monitor collision = monitorRepository.findByName(request.name()).orElse(null);
+        Monitor collision = monitorRepository.findByName(trimmedName).orElse(null);
 
         if (collision != null && !collision.getId().equals(monitor.getId())) {
-            throw new MonitorNameAlreadyExistsException(request.name());
+            throw new MonitorNameAlreadyExistsException(trimmedName);
         }
 
-        monitor.setName(request.name());
+        monitor.setName(trimmedName);
         monitor.setUrl(request.url());
         monitor.applySettings(request.method(), request.intervalSeconds(), request.timeoutMs(),
                 request.expectedStatus());
